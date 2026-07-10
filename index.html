@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>울산 옥동초 학군 84타입 투자 분석 리포트</title>
+<meta property="og:title" content="울산 옥동초 학군 84타입 투자 분석 리포트">
+<meta property="og:description" content="옥동초등학교 통학구역 내 84타입 아파트 3개 단지 실거래 분석 · 저평가 진단 · 2023~2025 가격 흐름">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --navy:#0b1526; --navy2:#101d33; --card:#15243d; --card2:#1a2c4a;
+  --line:#24385c; --ink:#e8eef8; --sub:#93a5c4; --dim:#5f7396;
+  --gold:#f5c451; --mint:#4fd1a5; --coral:#ff7a6e; --sky:#5aa7f0;
+  --hanshin:#5aa7f0; --lotte:#f5c451; --daeryuk:#4fd1a5;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--navy);color:var(--ink);font-family:'Pretendard',-apple-system,'Malgun Gothic',sans-serif;line-height:1.65;word-break:keep-all}
+a{color:inherit;text-decoration:none}
+
+/* ── nav ── */
+nav{position:sticky;top:0;z-index:1000;background:rgba(11,21,38,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+nav .in{max-width:1080px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:18px;overflow-x:auto}
+nav .logo{font-weight:800;font-size:15px;white-space:nowrap}
+nav .logo b{color:var(--gold)}
+nav a.mi{font-size:13.5px;color:var(--sub);white-space:nowrap;padding:4px 2px}
+nav a.mi:hover{color:var(--ink)}
+
+/* ── hero ── */
+.hero{max-width:1080px;margin:0 auto;padding:72px 20px 40px}
+.hero .kicker{display:inline-flex;gap:8px;align-items:center;font-size:12.5px;font-weight:700;letter-spacing:.12em;color:var(--gold);border:1px solid rgba(245,196,81,.35);border-radius:100px;padding:6px 14px;margin-bottom:22px}
+.hero h1{font-size:clamp(26px,4.6vw,44px);font-weight:800;line-height:1.28;letter-spacing:-.02em}
+.hero h1 .hl{color:var(--gold)}
+.hero p.lead{margin-top:18px;font-size:clamp(14.5px,1.8vw,17px);color:var(--sub);max-width:760px}
+.hero .meta{margin-top:26px;display:flex;flex-wrap:wrap;gap:10px}
+.hero .chip{font-size:12.5px;color:var(--sub);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:7px 13px}
+.hero .chip b{color:var(--ink)}
+
+/* ── layout ── */
+section{max-width:1080px;margin:0 auto;padding:48px 20px}
+.sec-label{font-size:12px;font-weight:800;letter-spacing:.16em;color:var(--gold);margin-bottom:10px}
+h2{font-size:clamp(21px,3vw,29px);font-weight:800;letter-spacing:-.01em;margin-bottom:10px}
+p.desc{color:var(--sub);font-size:14.5px;max-width:760px;margin-bottom:28px}
+
+/* ── kpi cards ── */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.kpi{background:linear-gradient(160deg,var(--card),var(--navy2));border:1px solid var(--line);border-radius:16px;padding:22px 20px;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;inset:0 0 auto 0;height:3px;background:var(--ac,var(--gold))}
+.kpi .t{font-size:13px;color:var(--sub);font-weight:600}
+.kpi .v{font-size:clamp(22px,3vw,30px);font-weight:800;margin:6px 0 4px;letter-spacing:-.02em}
+.kpi .s{font-size:12.5px;color:var(--dim)}
+.up{color:var(--mint)} .down{color:var(--coral)}
+
+/* ── map ── */
+#map{height:520px;border-radius:18px;border:1px solid var(--line);background:var(--card)}
+.map-legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:14px;font-size:13px;color:var(--sub)}
+.map-legend .li{display:flex;align-items:center;gap:7px}
+.dot{width:11px;height:11px;border-radius:50%;display:inline-block}
+.map-note{margin-top:10px;font-size:12px;color:var(--dim)}
+
+/* ── panels / charts ── */
+.panel{background:linear-gradient(165deg,var(--card),var(--navy2));border:1px solid var(--line);border-radius:18px;padding:26px 24px}
+.panel h3{font-size:16.5px;font-weight:800;margin-bottom:4px}
+.panel .sub{font-size:13px;color:var(--sub);margin-bottom:18px}
+.chart-wrap{overflow-x:auto}
+svg text{font-family:'Pretendard',sans-serif}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:860px){.grid2{grid-template-columns:1fr}}
+
+/* ── verdict banner ── */
+.verdict{background:linear-gradient(135deg,rgba(245,196,81,.14),rgba(245,196,81,.03));border:1px solid rgba(245,196,81,.4);border-radius:18px;padding:28px 26px;display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap}
+.verdict .badge{flex:0 0 auto;background:var(--gold);color:#1a1503;font-weight:800;font-size:13px;border-radius:10px;padding:8px 14px}
+.verdict h3{font-size:19px;font-weight:800;margin-bottom:8px}
+.verdict p{font-size:14.5px;color:var(--sub);max-width:720px}
+.verdict b{color:var(--ink)}
+
+/* ── apt detail cards ── */
+.apt-card{background:linear-gradient(165deg,var(--card),var(--navy2));border:1px solid var(--line);border-radius:20px;padding:28px 26px;margin-bottom:22px;position:relative;overflow:hidden}
+.apt-card::before{content:'';position:absolute;inset:0 auto 0 0;width:4px;background:var(--ac)}
+.apt-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:14px;align-items:flex-start;margin-bottom:18px}
+.apt-head .rank{font-size:12px;font-weight:800;letter-spacing:.1em;color:var(--ac)}
+.apt-head h3{font-size:clamp(19px,2.6vw,24px);font-weight:800;margin-top:3px}
+.apt-head .tag{font-size:12.5px;color:var(--sub);margin-top:5px}
+.score-box{text-align:right}
+.score-box .num{font-size:30px;font-weight:800;color:var(--ac);line-height:1}
+.score-box .stars{font-size:15px;letter-spacing:2px;color:var(--gold);margin-top:4px}
+.score-box .lbl{font-size:11.5px;color:var(--dim);margin-top:2px}
+.apt-grid{display:grid;grid-template-columns:280px 1fr;gap:24px;align-items:start}
+@media(max-width:820px){.apt-grid{grid-template-columns:1fr}}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+.fact{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.fact .k{font-size:11px;color:var(--dim)}
+.fact .v{font-size:14.5px;font-weight:700;margin-top:2px}
+.rating-rows{display:flex;flex-direction:column;gap:9px;margin-bottom:20px}
+.rr{display:grid;grid-template-columns:92px 1fr 38px;align-items:center;gap:10px;font-size:13px}
+.rr .k{color:var(--sub)}
+.rr .bar{height:7px;border-radius:100px;background:rgba(255,255,255,.07);overflow:hidden}
+.rr .bar i{display:block;height:100%;border-radius:100px;background:var(--ac)}
+.rr .n{text-align:right;font-weight:700;color:var(--ac);font-variant-numeric:tabular-nums}
+.pros-cons{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:640px){.pros-cons{grid-template-columns:1fr}}
+.pc{border-radius:12px;padding:16px;border:1px solid var(--line)}
+.pc.pros{background:rgba(79,209,165,.06)}
+.pc.cons{background:rgba(255,122,110,.06)}
+.pc .h{font-size:13px;font-weight:800;margin-bottom:10px}
+.pc.pros .h{color:var(--mint)} .pc.cons .h{color:var(--coral)}
+.pc ul{list-style:none}
+.pc li{font-size:13.5px;color:var(--sub);padding-left:18px;position:relative;margin-bottom:8px}
+.pc.pros li::before{content:'+';position:absolute;left:0;color:var(--mint);font-weight:800}
+.pc.cons li::before{content:'−';position:absolute;left:0;color:var(--coral);font-weight:800}
+
+/* ── table ── */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:680px}
+th{background:var(--card2);color:var(--sub);font-weight:700;text-align:left;padding:12px 14px;font-size:12.5px;white-space:nowrap}
+td{padding:12px 14px;border-top:1px solid var(--line);white-space:nowrap}
+td b{font-weight:700}
+tr.hl td{background:rgba(245,196,81,.07)}
+
+/* ── footer ── */
+footer{border-top:1px solid var(--line);margin-top:40px}
+footer .in{max-width:1080px;margin:0 auto;padding:36px 20px 60px;font-size:12.5px;color:var(--dim)}
+footer p{margin-bottom:8px;max-width:860px}
+</style>
+</head>
+<body>
+
+<nav><div class="in">
+  <span class="logo">🏫 옥동 <b>학세권</b> 리포트</span>
+  <a class="mi" href="#summary">요약</a>
+  <a class="mi" href="#map-sec">학구도 지도</a>
+  <a class="mi" href="#trend">가격 흐름</a>
+  <a class="mi" href="#value">저평가 분석</a>
+  <a class="mi" href="#detail">단지 리포트</a>
+  <a class="mi" href="#conclusion">결론</a>
+</div></nav>
+
+<div class="hero">
+  <span class="kicker">REAL ESTATE × SCHOOL DISTRICT RESEARCH</span>
+  <h1>울산 옥동초등학교 학군<br><span class="hl">84타입 아파트</span> 투자 분석 리포트</h1>
+  <p class="lead">옥동초등학교 통학구역(학구도)을 좌표 단위로 판정하고, 학구 내 전용 84㎡ 보유 3개 단지의
+  2023년 1월~2025년 7월 국토교통부 실거래 전수(48건)를 분석했다. 어떤 단지가 저평가되어 있고,
+  어디에 상승 여력이 남아 있는지를 데이터로 답한다.</p>
+  <div class="meta">
+    <span class="chip">기준일 <b>2026-07-10</b></span>
+    <span class="chip">분석기간 <b>2023.01 ~ 2025.07 (31개월)</b></span>
+    <span class="chip">데이터 <b>국토부 실거래가 · 학구도안내서비스 · 학교알리미</b></span>
+    <span class="chip">대상 <b>옥동초 학구 내 전용 84㎡ · 3개 단지 48건</b></span>
+  </div>
+</div>
+
+<!-- ═══════════ 1. Executive Summary ═══════════ -->
+<section id="summary">
+  <div class="sec-label">01 · EXECUTIVE SUMMARY</div>
+  <h2>핵심 요약</h2>
+  <p class="desc">옥동초 학구에서 전용 84㎡를 살 수 있는 선택지는 단 3개 단지뿐이다. 대장(한신휴플러스)은 신고가 행진 중,
+  준신축(롯데인벤스가1단지)은 대장과의 격차가 비정상적으로 벌어져 있으며, 구축(대륙현대1차)은 재건축 스토리를 품고 있다.</p>
+  <div class="kpis">
+    <div class="kpi" style="--ac:var(--hanshin)">
+      <div class="t">🏆 학군 대장 — 대공원한신휴플러스</div>
+      <div class="v">9.77<span style="font-size:16px">억</span> <span class="up" style="font-size:15px">▲13.6%</span></div>
+      <div class="s">2025.06 최신 실거래 · 2023년 평균 대비 상승률 · 26건</div>
+    </div>
+    <div class="kpi" style="--ac:var(--lotte)">
+      <div class="t">💎 저평가 1순위 — 대공원롯데인벤스가1단지</div>
+      <div class="v">8.10<span style="font-size:16px">억</span> <span style="font-size:15px;color:var(--gold)">GAP −17%</span></div>
+      <div class="s">2024.12 최신 실거래 · 대장 대비 1.67억 격차 · 매물 잠김(31개월 3건)</div>
+    </div>
+    <div class="kpi" style="--ac:var(--daeryuk)">
+      <div class="t">🧱 재건축 씨앗 — 대륙현대1차</div>
+      <div class="v">4.39<span style="font-size:16px">억</span> <span class="up" style="font-size:15px">▲11.5%</span></div>
+      <div class="s">최근 3건 평균 · 1989년식 37년차 · 최저 진입가</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ 2. Map ═══════════ -->
+<section id="map-sec">
+  <div class="sec-label">02 · SCHOOL DISTRICT MAP</div>
+  <h2>옥동초 통학구역과 3개 단지의 위치</h2>
+  <p class="desc">노란 영역이 교육청 고시 기반 옥동초등학교 통학구역이다. 옥동 전체에서 거래된 38개 단지 중
+  <b style="color:var(--ink)">학구 안에 있으면서 전용 84㎡를 보유한 단지는 아래 3곳이 전부</b>다 — 롯데인벤스로얄·옥동삼익 등
+  옥동의 다른 인기 단지는 모두 옥현초·격동초·남산초 등 다른 학구에 속한다.</p>
+  <div id="map"></div>
+  <div class="map-legend">
+    <span class="li"><span class="dot" style="background:var(--gold)"></span>옥동초 통학구역</span>
+    <span class="li"><span class="dot" style="background:#fff;border:2px solid var(--gold)"></span>옥동초등학교</span>
+    <span class="li"><span class="dot" style="background:var(--hanshin)"></span>대공원한신휴플러스 (2011)</span>
+    <span class="li"><span class="dot" style="background:var(--lotte)"></span>대공원롯데인벤스가1단지 (2006)</span>
+    <span class="li"><span class="dot" style="background:var(--daeryuk)"></span>대륙현대1차 (1989)</span>
+  </div>
+  <div class="map-note">※ 통학구역 경계는 학구도안내서비스(교육부·한국교육학술정보원) 자료로, 단순 열람용이며 법적 효력이 없음. 실제 배정은 울산강남교육지원청 확인 필수.</div>
+</section>
+
+<!-- ═══════════ 3. Price trend ═══════════ -->
+<section id="trend">
+  <div class="sec-label">03 · PRICE TREND</div>
+  <h2>84타입 실거래 가격 흐름 (2023.01 ~ 2025.07)</h2>
+  <p class="desc">점 하나가 실거래 1건이다. 선은 반기별 평균. 한신휴플러스는 우상향 각도가 뚜렷하고,
+  롯데인벤스가는 거래 자체가 희소하며, 대륙현대는 재건축 기대가 섞여 층·동별 편차가 크다.</p>
+  <div class="panel">
+    <h3>단지별 실거래 산점도 + 반기 평균선</h3>
+    <div class="sub">단위: 억원 · 전용 83~86㎡ · 해제거래 제외</div>
+    <div class="chart-wrap"><svg id="trendChart" width="1000" height="430" viewBox="0 0 1000 430"></svg></div>
+  </div>
+</section>
+
+<!-- ═══════════ 4. Valuation ═══════════ -->
+<section id="value">
+  <div class="sec-label">04 · VALUATION</div>
+  <h2>무엇이 저평가인가 — 갭(GAP) 분석</h2>
+  <p class="desc">같은 학군, 같은 대공원 생활권의 세 단지를 나란히 놓으면 가격 구조가 보인다.
+  판단의 축은 "대장과의 격차가 연식 차이로 설명되는가"이다.</p>
+
+  <div class="grid2">
+    <div class="panel">
+      <h3>현재 가격 vs 대장 대비 격차</h3>
+      <div class="sub">최근 3건 평균 기준 (억원)</div>
+      <div class="chart-wrap"><svg id="gapChart" width="470" height="300" viewBox="0 0 470 300"></svg></div>
+    </div>
+    <div class="panel">
+      <h3>2023 → 2025 상승률 비교</h3>
+      <div class="sub">2023년 평균 대비 최근 3건 평균</div>
+      <div class="chart-wrap"><svg id="growthChart" width="470" height="300" viewBox="0 0 470 300"></svg></div>
+    </div>
+  </div>
+
+  <div style="height:18px"></div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr>
+        <th>단지</th><th>연식</th><th>최신 실거래</th><th>최근 3건 평균</th><th>대장 대비</th><th>2023→최근 상승률</th><th>31개월 거래량</th>
+      </tr></thead>
+      <tbody>
+        <tr>
+          <td><b style="color:var(--hanshin)">대공원한신휴플러스</b></td><td>2011 (15년차)</td>
+          <td>9.77억 <span style="color:var(--dim)">(25.06 · 2층)</span></td><td>9.64억</td><td>기준(대장)</td>
+          <td class="up">+13.6%</td><td>26건 (활발)</td>
+        </tr>
+        <tr class="hl">
+          <td><b style="color:var(--lotte)">대공원롯데인벤스가1단지</b></td><td>2006 (20년차)</td>
+          <td>8.10억 <span style="color:var(--dim)">(24.12 · 4층)</span></td><td>7.78억</td>
+          <td><b style="color:var(--gold)">−1.86억 (−19.3%)</b></td>
+          <td class="up">+4.5%</td><td><b>3건 (매물 잠김)</b></td>
+        </tr>
+        <tr>
+          <td><b style="color:var(--daeryuk)">대륙현대1차</b></td><td>1989 (37년차)</td>
+          <td>3.95억 <span style="color:var(--dim)">(25.07 · 10층)</span></td><td>4.39억</td><td>−5.25억 (−54%)</td>
+          <td class="up">+11.5%</td><td>19건</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="height:22px"></div>
+
+  <div class="verdict">
+    <span class="badge">저평가 판정</span>
+    <div>
+      <h3>대공원롯데인벤스가1단지 — 격차는 벌어졌고, 매물은 잠겼다</h3>
+      <p>대장 한신휴플러스와의 연식 차이는 5년에 불과한데 가격 격차는 <b>19.3%(1.86억)</b>까지 벌어졌다.
+      한신이 +13.6% 오르는 동안 롯데인벤스가는 +4.5%만 반영돼 <b>갭 메우기(gap closing) 여력</b>이 축적된 상태.
+      31개월간 84타입 거래가 단 3건이라는 것은 수요 부재가 아니라 <b>소유자들이 팔지 않는 매물 잠김</b>에 가깝다 —
+      실제로 마지막 두 거래는 1층 7.8억 → 4층 8.1억으로 저층 거래조차 상승 중이며, 옥동 학군지에 신축 공급이
+      사실상 전무해 준신축 대단지의 희소성은 시간이 갈수록 커진다.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ 5. Detail cards ═══════════ -->
+<section id="detail">
+  <div class="sec-label">05 · COMPLEX DEEP-DIVE</div>
+  <h2>단지별 상세 리포트</h2>
+  <p class="desc">별점은 학군(공통 만점)·상품성·가격 매력·상승 모멘텀·환금성 5개 축으로 매긴 종합 평가다.</p>
+
+  <!-- 롯데인벤스가 -->
+  <div class="apt-card" style="--ac:var(--lotte)">
+    <div class="apt-head">
+      <div>
+        <div class="rank">INVESTMENT PICK · 저평가 1순위</div>
+        <h3>대공원롯데인벤스가1단지</h3>
+        <div class="tag">2006년 · 옥동 130 · 전용 84.93㎡ · 옥동초 도보권</div>
+      </div>
+      <div class="score-box"><div class="num">4.1</div><div class="stars">★★★★☆</div><div class="lbl">종합 평점 / 5.0</div></div>
+    </div>
+    <div class="apt-grid">
+      <svg class="radar" data-scores="5,3.5,5,4,2" width="280" height="250" viewBox="0 0 280 250"></svg>
+      <div>
+        <div class="facts">
+          <div class="fact"><div class="k">최신 실거래 (84타입)</div><div class="v">8.10억 (24.12 · 4층)</div></div>
+          <div class="fact"><div class="k">직전 거래</div><div class="v">7.80억 (24.10 · 1층)</div></div>
+          <div class="fact"><div class="k">대장 대비 격차</div><div class="v" style="color:var(--gold)">−1.86억 (−19.3%)</div></div>
+          <div class="fact"><div class="k">31개월 거래량</div><div class="v">3건 — 매물 잠김</div></div>
+        </div>
+        <div class="rating-rows">
+          <div class="rr"><span class="k">학군</span><span class="bar"><i style="width:100%"></i></span><span class="n">5.0</span></div>
+          <div class="rr"><span class="k">상품성</span><span class="bar"><i style="width:70%"></i></span><span class="n">3.5</span></div>
+          <div class="rr"><span class="k">가격 매력</span><span class="bar"><i style="width:100%"></i></span><span class="n">5.0</span></div>
+          <div class="rr"><span class="k">상승 모멘텀</span><span class="bar"><i style="width:80%"></i></span><span class="n">4.0</span></div>
+          <div class="rr"><span class="k">환금성</span><span class="bar"><i style="width:40%"></i></span><span class="n">2.0</span></div>
+        </div>
+        <div class="pros-cons">
+          <div class="pc pros"><div class="h">강점 (BUY 논거)</div><ul>
+            <li>대장 대비 −19.3% 격차 — 연식차 5년으로는 설명 안 되는 저평가</li>
+            <li>옥동초 학구 + 울산대공원 정문 생활권의 준신축 대단지</li>
+            <li>저층(1층·4층) 거래조차 우상향 — 실수요가 받치는 가격</li>
+            <li>학군지 신축 공급 전무 → 준신축 희소가치 상승 구조</li>
+          </ul></div>
+          <div class="pc cons"><div class="h">약점 (리스크)</div><ul>
+            <li>거래 표본 3건 — 통계 신뢰도 낮고 원하는 시점 매수 어려움</li>
+            <li>환금성 최하 — 급매도·급매수 모두 쉽지 않음</li>
+            <li>20년차 진입 — 커뮤니티·설비의 신축 대비 열위</li>
+          </ul></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 한신휴플러스 -->
+  <div class="apt-card" style="--ac:var(--hanshin)">
+    <div class="apt-head">
+      <div>
+        <div class="rank">MARKET LEADER · 학군 대장주</div>
+        <h3>대공원한신휴플러스</h3>
+        <div class="tag">2011년 · 옥동 1418 · 전용 84.92㎡ · 옥동초 인접</div>
+      </div>
+      <div class="score-box"><div class="num">4.3</div><div class="stars">★★★★☆</div><div class="lbl">종합 평점 / 5.0</div></div>
+    </div>
+    <div class="apt-grid">
+      <svg class="radar" data-scores="5,4.5,2.5,4.5,4.5" width="280" height="250" viewBox="0 0 280 250"></svg>
+      <div>
+        <div class="facts">
+          <div class="fact"><div class="k">최신 실거래 (84타입)</div><div class="v">9.77억 (25.06 · 2층)</div></div>
+          <div class="fact"><div class="k">2023 평균 → 최근</div><div class="v" class="up">8.48억 → 9.64억 (+13.6%)</div></div>
+          <div class="fact"><div class="k">반기 평균 추이</div><div class="v">5반기 연속 상승</div></div>
+          <div class="fact"><div class="k">31개월 거래량</div><div class="v">26건 — 가장 활발</div></div>
+        </div>
+        <div class="rating-rows">
+          <div class="rr"><span class="k">학군</span><span class="bar"><i style="width:100%"></i></span><span class="n">5.0</span></div>
+          <div class="rr"><span class="k">상품성</span><span class="bar"><i style="width:90%"></i></span><span class="n">4.5</span></div>
+          <div class="rr"><span class="k">가격 매력</span><span class="bar"><i style="width:50%"></i></span><span class="n">2.5</span></div>
+          <div class="rr"><span class="k">상승 모멘텀</span><span class="bar"><i style="width:90%"></i></span><span class="n">4.5</span></div>
+          <div class="rr"><span class="k">환금성</span><span class="bar"><i style="width:90%"></i></span><span class="n">4.5</span></div>
+        </div>
+        <div class="pros-cons">
+          <div class="pc pros"><div class="h">강점</div><ul>
+            <li>2023H1부터 5반기 연속 반기평균 상승 (8.37→9.64억) — 흔들림 없는 대장</li>
+            <li>학군 내 최신축(2011) — 옥동 84타입의 가격 기준점</li>
+            <li>월 1건 수준의 거래 — 원할 때 사고팔 수 있는 유동성</li>
+            <li>저층(2층) 9.77억 신고가 — 상승 추세 현재진행형</li>
+          </ul></div>
+          <div class="pc cons"><div class="h">약점</div><ul>
+            <li>이미 많이 반영된 가격 — 안전하지만 초과수익 여지는 제한적</li>
+            <li>진입가 10억 근접 — 자금 부담 최대</li>
+            <li>울산 지방 시장 특성상 10억대 상방 저항 가능성</li>
+          </ul></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 대륙현대1차 -->
+  <div class="apt-card" style="--ac:var(--daeryuk)">
+    <div class="apt-head">
+      <div>
+        <div class="rank">VALUE PLAY · 재건축 잠재주</div>
+        <h3>대륙현대1차</h3>
+        <div class="tag">1989년 · 옥동 157-5 (거마로 22) · 전용 84.75㎡ · 옥동초 최근접</div>
+      </div>
+      <div class="score-box"><div class="num">3.5</div><div class="stars">★★★½</div><div class="lbl">종합 평점 / 5.0</div></div>
+    </div>
+    <div class="apt-grid">
+      <svg class="radar" data-scores="5,1.5,4.5,3,3.5" width="280" height="250" viewBox="0 0 280 250"></svg>
+      <div>
+        <div class="facts">
+          <div class="fact"><div class="k">최신 실거래 (84타입)</div><div class="v">3.95억 (25.07 · 10층)</div></div>
+          <div class="fact"><div class="k">가격 밴드</div><div class="v">3.07 ~ 4.97억 (편차 큼)</div></div>
+          <div class="fact"><div class="k">2023 평균 → 최근</div><div class="v">3.94억 → 4.39억 (+11.5%)</div></div>
+          <div class="fact"><div class="k">31개월 거래량</div><div class="v">19건</div></div>
+        </div>
+        <div class="rating-rows">
+          <div class="rr"><span class="k">학군</span><span class="bar"><i style="width:100%"></i></span><span class="n">5.0</span></div>
+          <div class="rr"><span class="k">상품성</span><span class="bar"><i style="width:30%"></i></span><span class="n">1.5</span></div>
+          <div class="rr"><span class="k">가격 매력</span><span class="bar"><i style="width:90%"></i></span><span class="n">4.5</span></div>
+          <div class="rr"><span class="k">상승 모멘텀</span><span class="bar"><i style="width:60%"></i></span><span class="n">3.0</span></div>
+          <div class="rr"><span class="k">환금성</span><span class="bar"><i style="width:70%"></i></span><span class="n">3.5</span></div>
+        </div>
+        <div class="pros-cons">
+          <div class="pc pros"><div class="h">강점</div><ul>
+            <li>옥동초 학군을 4억대에 진입하는 유일한 84타입</li>
+            <li>1989년식 37년차 — 정비사업(재건축) 논의 진입 연한</li>
+            <li>옥동초 최근접 입지 + 저밀 구축의 대지지분 가치</li>
+            <li>고층 기준 4.6~5.0억 매물은 신고가 경신 중</li>
+          </ul></div>
+          <div class="pc cons"><div class="h">약점</div><ul>
+            <li>같은 달에도 3.1억(1층)~4.6억(5층) — 가격 편차와 협상 변수 큼</li>
+            <li>재건축은 아직 확정된 것이 없음 — 장기 보유 각오 필요</li>
+            <li>37년차 실거주 만족도(주차·설비) 낮음</li>
+          </ul></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ 6. Conclusion ═══════════ -->
+<section id="conclusion">
+  <div class="sec-label">06 · CONCLUSION</div>
+  <h2>최종 결론</h2>
+  <div class="panel" style="margin-bottom:16px">
+    <h3 style="margin-bottom:14px">투자 성향별 제언</h3>
+    <div class="tbl-wrap" style="border:none">
+      <table style="min-width:640px">
+        <thead><tr><th>성향</th><th>추천</th><th>논거</th></tr></thead>
+        <tbody>
+          <tr class="hl"><td><b>저평가 매수 (본 리포트 PICK)</b></td><td><b style="color:var(--lotte)">롯데인벤스가1단지</b></td>
+            <td>대장과 −19.3% 갭 + 매물 잠김 + 학군 프리미엄. 갭 메우기 시 목표 밴드 8.8~9.0억</td></tr>
+          <tr><td>안정 실거주 + 자산방어</td><td><b style="color:var(--hanshin)">한신휴플러스</b></td>
+            <td>5반기 연속 상승의 검증된 대장. 학군+상품성+유동성의 3박자</td></tr>
+          <tr><td>장기 시세차익 (고위험)</td><td><b style="color:var(--daeryuk)">대륙현대1차</b></td>
+            <td>4억대 진입 + 재건축 옵션. 단, 불확실성 감내 필수</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <p class="desc" style="margin:0">세 단지 모두 "옥동초 학구"라는 공통 프리미엄 위에 서 있다. 울산 남구 최상급 학군지에서
+  84타입 선택지가 3개뿐이라는 공급 구조 자체가 이 시장의 가장 강한 펀더멘털이다.</p>
+</section>
+
+<footer><div class="in">
+  <p><b>데이터 출처</b> — 국토교통부 아파트 매매 실거래가(공공데이터포털) · 학구도안내서비스(교육부/한국교육학술정보원) · 학교알리미(KERIS) · 네이버클라우드 Geocoding. 2023.01~2025.07 계약분, 해제신고 거래 제외, 전용 83~86㎡를 84타입으로 집계.</p>
+  <p><b>면책</b> — 본 리포트는 공개 데이터 기반의 참고 자료이며 투자 권유가 아닙니다. 통학구역은 법적 효력이 없는 열람용 자료로, 실제 배정은 울산광역시강남교육지원청에 확인해야 합니다. 투자 판단과 결과의 책임은 투자자 본인에게 있습니다.</p>
+  <p style="margin-top:14px">© 2026 옥동 학세권 리포트 · Built with 학세권 MCP (schoolinfo + realestate + schoolzone)</p>
+</div></footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+/* ═══════ 데이터 ═══════ */
+const ZONE = {"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[129.29735358627508,35.535179171177134],[129.29756671119137,35.5351294565276],[129.29758551614327,35.5351127896875],[129.29760367180495,35.535096702892574],[129.29754607032262,35.534781832794245],[129.29754898865696,35.534761906847955],[129.29750437313248,35.53469854902174],[129.2974567492793,35.53425601837243],[129.2974034389605,35.533920878859774],[129.29815660615827,35.533791743116176],[129.29818620440003,35.53378664825208],[129.29975257045447,35.53351707108192],[129.29973816528369,35.53400166184829],[129.29970237655274,35.535205626666986],[129.29968251094957,35.53587392632896],[129.2996460296627,35.53587395553835],[129.2989614115456,35.536299701301],[129.29895974564005,35.536300736861655],[129.2989411629756,35.53631229153001],[129.29778022209032,35.538650751941496],[129.2977134773859,35.53868467532311],[129.29777726481285,35.538799781575264],[129.2977775964959,35.53879989239089],[129.2990330377466,35.53922037497376],[129.29941292829824,35.53934759988086],[129.29969039453357,35.53899713153541],[129.29986110022205,35.53883278197838],[129.29988211075724,35.53881280993833],[129.29989743924202,35.538798235568514],[129.3007676693128,35.53798243485614],[129.30090035894855,35.53784645240932],[129.30090019258782,35.53784634024857],[129.30092362917264,35.53782232279376],[129.30091777936514,35.53778634858737],[129.3007641752333,35.53773674672245],[129.30063949092224,35.537660452761806],[129.30035602644475,35.53742908439314],[129.30085993519398,35.53718884874157],[129.30091073596324,35.53716207700782],[129.30088753555358,35.536436996188705],[129.30089747946047,35.536073857082265],[129.30090161911252,35.53592265310853],[129.3009052306726,35.5358729624749],[129.30198879745666,35.53587209734505],[129.30229397718696,35.535871851780996],[129.30265858472913,35.53587155868975],[129.30301840131347,35.53587126592387],[129.30333369603818,35.53587100828234],[129.30333909886605,35.53587143486761],[129.30339107621967,35.53538395465911],[129.30339808712264,35.53531819429435],[129.30341455571926,35.53521517976605],[129.30342021048727,35.53517978418524],[129.30346802866708,35.53488060875026],[129.30362043332977,35.53431609823261],[129.3036521401334,35.53419865833983],[129.3038758330704,35.53337008124879],[129.30387606876383,35.53337022812308],[129.30403106164357,35.53346614321969],[129.30428505664847,35.53362332309313],[129.30446507702746,35.53376219233017],[129.3048974794565,35.53403358506328],[129.30463277871058,35.53456791839462],[129.30431866278994,35.53541430931485],[129.3045181169658,35.53545340945518],[129.30478123424692,35.5355258613599],[129.30558143240805,35.535714396394205],[129.30589219174914,35.534834753376586],[129.30594365406168,35.534846520776775],[129.30652729441434,35.53500813701319],[129.3065290031188,35.53500321153541],[129.30652902765246,35.53500314438717],[129.30666480583056,35.53461170971419],[129.30666698694108,35.53460541999306],[129.30680851712566,35.53420401924365],[129.30699073762057,35.533687225939055],[129.3071454311399,35.533248495858224],[129.3072863431933,35.53284883643464],[129.30735883974407,35.53264321700777],[129.30750981672642,35.532208096991255],[129.3077354399649,35.53171491042324],[129.30784964398683,35.531498057910305],[129.30807587807737,35.53106848503332],[129.30807891807646,35.53106270866836],[129.30694784101985,35.53054603492698],[129.3068316706499,35.53049296871787],[129.3064313572042,35.53034156359595],[129.30571384344262,35.53018469824642],[129.30515659577196,35.53011019942227],[129.3050328767343,35.530093660822075],[129.30448705674223,35.530094220802646],[129.30419191543984,35.530100507811575],[129.3038106362994,35.53019991835481],[129.30371384423512,35.53022515621314],[129.3033789742561,35.53035429311141],[129.3032031687694,35.5304220892777],[129.30291879570584,35.53021728824398],[129.3028771031032,35.5301804949558],[129.30276572106544,35.53009778191983],[129.30262174756533,35.52998309976018],[129.3025010468542,35.529920733933366],[129.30241474894333,35.529903256198025],[129.3022959112197,35.529887627125696],[129.3021520001791,35.529845597968006],[129.30195820721926,35.52968064168053],[129.30184322153593,35.52969171378296],[129.30174090933528,35.52967251935414],[129.3016293991887,35.52966765981357],[129.30157550201992,35.52967300317397],[129.3014885596421,35.5296922897692],[129.30134242995908,35.529711320407756],[129.30122583869132,35.52969567441475],[129.301147766764,35.529660376021816],[129.3010885886778,35.529644542187015],[129.30104293045576,35.52963840163189],[129.30097712571867,35.52963747352673],[129.30092542858256,35.52963223933224],[129.30088823224403,35.52960983694527],[129.30074429044242,35.52956159471368],[129.30065547949198,35.52950017719484],[129.3006070883372,35.52944072025275],[129.30056348943418,35.52937128532926],[129.30052994287158,35.52932498716749],[129.3004830501459,35.529277541628204],[129.30041975177753,35.529238536761326],[129.30036528394575,35.52919100325364],[129.30028886535726,35.52913467247264],[129.30021734914,35.529077004625066],[129.3001549826785,35.52911123676124],[129.3000544947114,35.529069340633065],[129.29959234601847,35.528921526844286],[129.29919933159607,35.52879471211622],[129.29904314882182,35.528757000464374],[129.29896576510131,35.528746987654216],[129.29885990046196,35.528759370606586],[129.29873331298492,35.528773842635886],[129.29859536065055,35.5287974986562],[129.29832372471495,35.52884353042184],[129.2982267021456,35.52886471526787],[129.29816056658396,35.52889351091782],[129.2980891662563,35.52892438564128],[129.2976268064794,35.52903231729394],[129.29782381940478,35.529149570947624],[129.29778181649849,35.52915848838966],[129.2975506642896,35.52920755648138],[129.2972935500875,35.529246322306115],[129.29707312630083,35.52926823050641],[129.2969691095572,35.529279273657096],[129.29706205534222,35.529863144147456],[129.29706540982008,35.529884217465145],[129.2970733566431,35.52993413294238],[129.29717295940856,35.53055980667729],[129.2971135114168,35.530584291582656],[129.29703457375598,35.530616787088626],[129.29690620242056,35.53064133634231],[129.29667608939138,35.53067985315883],[129.2966203907105,35.53072001704899],[129.29678811632687,35.53134869308303],[129.29628736343963,35.53143975801357],[129.29561007914324,35.53156291603778],[129.29585368054913,35.53243613620131],[129.29614188681128,35.53346921855306],[129.29627612714674,35.53393237250535],[129.29631735328286,35.53410381710014],[129.29582369362063,35.5341831467298],[129.29569597311317,35.5342036690434],[129.2949177367928,35.53432874614965],[129.29486299523154,35.53433754471902],[129.2945466226755,35.5343883882962],[129.29396448338716,35.53447822863892],[129.29405395044827,35.53501607162048],[129.2952757517184,35.53482206327708],[129.29537149273736,35.53497378021044],[129.295633564752,35.53539190528089],[129.29571130668822,35.53551180200936],[129.29571762327444,35.53552154658854],[129.29590792611404,35.53581503623618],[129.29595113880546,35.53588167963415],[129.29609494640474,35.53611382327144],[129.2961805624585,35.53625202711872],[129.2964024417609,35.53657452883019],[129.2966054249405,35.53688324337042],[129.2966500418848,35.53683340949246],[129.29658400486628,35.53673033861049],[129.29657791739123,35.536720826697376],[129.29654560126718,35.536670396080666],[129.29654247334093,35.53666550972082],[129.29654308945842,35.53666527361664],[129.2967478497085,35.53658549523691],[129.2967794530448,35.53654348093865],[129.2968152553378,35.5362003240529],[129.29708748477398,35.53582864840282],[129.29710148542225,35.53580659560582],[129.29718192334752,35.53569415669914],[129.2971381032646,35.53565997094035],[129.29711553760296,35.53560508990269],[129.2971182984207,35.53553828357032],[129.29714649546702,35.53546336316486],[129.29707543330818,35.535262547766024],[129.297315015441,35.535212907853534],[129.29735663076934,35.53519450427162],[129.29735358627508,35.535179171177134]]]}};
+
+const SCHOOL = { name:"옥동초등학교", lat:35.5350499, lng:129.2965870 };
+const APTS = [
+  { key:"hanshin", name:"대공원한신휴플러스", lat:35.5321837, lng:129.2963863, color:"#5aa7f0", built:2011, latest:"9.77억 (25.06)" },
+  { key:"lotte",   name:"대공원롯데인벤스가1단지", lat:35.5304348, lng:129.2980026, color:"#f5c451", built:2006, latest:"8.10억 (24.12)" },
+  { key:"daeryuk", name:"대륙현대1차", lat:35.5357299, lng:129.2962396, color:"#4fd1a5", built:1989, latest:"3.95억 (25.07)" },
+];
+// 실거래 48건 (만원)
+const TRADES = [
+{a:"hanshin",d:"2023-01-20",p:79500},{a:"daeryuk",d:"2023-02-15",p:38000},{a:"daeryuk",d:"2023-02-18",p:41000},
+{a:"lotte",d:"2023-02-23",p:74500},{a:"hanshin",d:"2023-03-12",p:80000},{a:"hanshin",d:"2023-03-20",p:83000},
+{a:"daeryuk",d:"2023-03-25",p:46000},{a:"hanshin",d:"2023-04-05",p:84500},{a:"daeryuk",d:"2023-04-17",p:40500},
+{a:"hanshin",d:"2023-04-20",p:80000},{a:"hanshin",d:"2023-04-23",p:87800},{a:"hanshin",d:"2023-05-13",p:87500},
+{a:"hanshin",d:"2023-05-25",p:80500},{a:"hanshin",d:"2023-06-18",p:89500},{a:"hanshin",d:"2023-06-20",p:84500},
+{a:"daeryuk",d:"2023-07-08",p:35200},{a:"daeryuk",d:"2023-07-09",p:38000},{a:"hanshin",d:"2023-07-21",p:89700},
+{a:"daeryuk",d:"2023-11-20",p:37000},{a:"hanshin",d:"2023-11-21",p:89500},{a:"hanshin",d:"2023-12-27",p:87000},
+{a:"daeryuk",d:"2024-01-08",p:46500},{a:"hanshin",d:"2024-01-18",p:91700},{a:"daeryuk",d:"2024-02-27",p:36500},
+{a:"daeryuk",d:"2024-03-04",p:46000},{a:"hanshin",d:"2024-03-16",p:86000},{a:"hanshin",d:"2024-03-17",p:91000},
+{a:"hanshin",d:"2024-03-17",p:90700},{a:"hanshin",d:"2024-04-13",p:91000},{a:"hanshin",d:"2024-05-05",p:91500},
+{a:"hanshin",d:"2024-05-20",p:86500},{a:"daeryuk",d:"2024-10-05",p:36000},{a:"hanshin",d:"2024-10-08",p:95000},
+{a:"daeryuk",d:"2024-10-19",p:38000},{a:"daeryuk",d:"2024-10-21",p:36500},{a:"lotte",d:"2024-10-28",p:78000},
+{a:"hanshin",d:"2024-11-29",p:96500},{a:"lotte",d:"2024-12-01",p:81000},{a:"hanshin",d:"2024-12-07",p:96000},
+{a:"daeryuk",d:"2025-01-04",p:47300},{a:"daeryuk",d:"2025-03-05",p:30700},{a:"daeryuk",d:"2025-03-05",p:46000},
+{a:"hanshin",d:"2025-03-29",p:96000},{a:"daeryuk",d:"2025-03-29",p:49700},{a:"hanshin",d:"2025-03-31",p:95500},
+{a:"hanshin",d:"2025-06-02",p:97700},{a:"daeryuk",d:"2025-06-23",p:42500},{a:"daeryuk",d:"2025-07-29",p:39500}
+];
+const COLOR = { hanshin:"#5aa7f0", lotte:"#f5c451", daeryuk:"#4fd1a5" };
+const NAME  = { hanshin:"대공원한신휴플러스", lotte:"롯데인벤스가1단지", daeryuk:"대륙현대1차" };
+
+/* ═══════ 지도 ═══════ */
+try {
+  const map = L.map("map", { scrollWheelZoom:false }).setView([35.5335, 129.2995], 15);
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+    attribution:'&copy; OpenStreetMap &copy; CARTO', maxZoom:19
+  }).addTo(map);
+  const zoneLayer = L.geoJSON(ZONE, { style:{ color:"#f5c451", weight:2.5, fillColor:"#f5c451", fillOpacity:0.13 }}).addTo(map);
+  zoneLayer.bindPopup("<b>옥동초등학교 통학구역</b><br>울산광역시강남교육지원청 고시");
+  L.circleMarker([SCHOOL.lat, SCHOOL.lng], { radius:9, color:"#f5c451", weight:3, fillColor:"#fff", fillOpacity:1 })
+    .addTo(map).bindPopup("<b>🏫 옥동초등학교</b><br>울산 남구 문수로 401");
+  APTS.forEach(apt => {
+    L.circleMarker([apt.lat, apt.lng], { radius:10, color:"#0b1526", weight:2.5, fillColor:apt.color, fillOpacity:1 })
+      .addTo(map)
+      .bindPopup(`<b>${apt.name}</b><br>${apt.built}년 준공 · 84타입 최신가 ${apt.latest}`);
+  });
+  map.fitBounds(zoneLayer.getBounds(), { padding:[26,26] });
+} catch(e) {
+  document.getElementById("map").innerHTML =
+    '<div style="display:flex;height:100%;align-items:center;justify-content:center;color:#93a5c4;font-size:14px;padding:20px;text-align:center">지도 라이브러리를 불러오지 못했습니다. 네트워크 연결을 확인해주세요.</div>';
+}
+
+/* ═══════ 차트 공통 ═══════ */
+const S = (tag, attrs, parent) => {
+  const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  for (const k in attrs) el.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(el);
+  return el;
+};
+const dateNum = d => { const [y,m,dd] = d.split("-").map(Number); return y + (m-1)/12 + (dd-1)/365; };
+
+/* ═══════ 1) 산점도 + 반기평균선 ═══════ */
+(function(){
+  const svg = document.getElementById("trendChart");
+  const W=1000, H=430, L=64, R=24, T=24, B=44;
+  const x0=2023.0, x1=2025.65, yMin=25000, yMax=105000;
+  const X = v => L + (v-x0)/(x1-x0)*(W-L-R);
+  const Y = v => T + (1-(v-yMin)/(yMax-yMin))*(H-T-B);
+
+  // grid + y labels (억)
+  for (let man=30000; man<=100000; man+=10000) {
+    S("line",{x1:L,x2:W-R,y1:Y(man),y2:Y(man),stroke:"#22345a","stroke-width":1,"stroke-dasharray":"3 5"},svg);
+    S("text",{x:L-10,y:Y(man)+4,fill:"#5f7396","font-size":12,"text-anchor":"end"},svg).textContent=(man/10000)+"억";
+  }
+  // x labels
+  [["2023",2023],["2023H2",2023.5],["2024",2024],["2024H2",2024.5],["2025",2025],["2025H2",2025.5]].forEach(([t,v])=>{
+    S("text",{x:X(v),y:H-16,fill:"#5f7396","font-size":12,"text-anchor":"middle"},svg).textContent=t;
+    S("line",{x1:X(v),x2:X(v),y1:T,y2:H-B,stroke:"#1b2b4a","stroke-width":1},svg);
+  });
+
+  // 반기 평균선
+  const halves = {};
+  TRADES.forEach(t=>{
+    const y=+t.d.slice(0,4), m=+t.d.slice(5,7);
+    const key=t.a+"|"+(y+(m<=6?0.25:0.75));
+    (halves[key] ??= []).push(t.p);
+  });
+  const lines = {};
+  Object.entries(halves).forEach(([k,v])=>{
+    const [a,pos]=k.split("|");
+    (lines[a] ??= []).push([+pos, v.reduce((s,x)=>s+x,0)/v.length]);
+  });
+  Object.entries(lines).forEach(([a,pts])=>{
+    pts.sort((p,q)=>p[0]-q[0]);
+    const d = pts.map((p,i)=>(i?"L":"M")+X(p[0])+","+Y(p[1])).join(" ");
+    S("path",{d,fill:"none",stroke:COLOR[a],"stroke-width":2.5,"stroke-opacity":.85,"stroke-linecap":"round"},svg);
+    pts.forEach(p=>S("circle",{cx:X(p[0]),cy:Y(p[1]),r:3.5,fill:COLOR[a]},svg));
+  });
+
+  // scatter
+  TRADES.forEach(t=>{
+    S("circle",{cx:X(dateNum(t.d)),cy:Y(t.p),r:5,fill:COLOR[t.a],"fill-opacity":.4,stroke:COLOR[t.a],"stroke-width":1.2},svg);
+  });
+
+  // legend
+  let lx=L+8;
+  Object.keys(NAME).forEach(a=>{
+    S("circle",{cx:lx,cy:T+6,r:5,fill:COLOR[a]},svg);
+    const tx=S("text",{x:lx+10,y:T+10,fill:"#c7d4ea","font-size":12.5},svg);
+    tx.textContent=NAME[a];
+    lx += 10 + NAME[a].length*12.5 + 26;
+  });
+})();
+
+/* ═══════ 2) 가격 격차 바 차트 ═══════ */
+(function(){
+  const svg = document.getElementById("gapChart");
+  const data = [
+    {n:"한신휴플러스", v:96400, c:COLOR.hanshin, note:"기준(대장)"},
+    {n:"롯데인벤스가1", v:77833, c:COLOR.lotte, note:"−19.3%"},
+    {n:"대륙현대1차", v:43900, c:COLOR.daeryuk, note:"−54.5%"},
+  ];
+  const W=470,H=300,L=110,R=64,T=26,B=20, max=105000;
+  data.forEach((d,i)=>{
+    const y = T + i*((H-T-B)/3) + 16;
+    const bw = (d.v/max)*(W-L-R);
+    S("text",{x:L-10,y:y+17,fill:"#93a5c4","font-size":13,"text-anchor":"end","font-weight":600},svg).textContent=d.n;
+    S("rect",{x:L,y,width:W-L-R,height:26,rx:7,fill:"rgba(255,255,255,.05)"},svg);
+    S("rect",{x:L,y,width:bw,height:26,rx:7,fill:d.c,"fill-opacity":.9},svg);
+    S("text",{x:L+bw+8,y:y+17,fill:"#e8eef8","font-size":13.5,"font-weight":700},svg).textContent=(d.v/10000).toFixed(2)+"억";
+    S("text",{x:L,y:y+43,fill:d.c,"font-size":11.5,"font-weight":600},svg).textContent=d.note;
+  });
+})();
+
+/* ═══════ 3) 상승률 비교 ═══════ */
+(function(){
+  const svg = document.getElementById("growthChart");
+  const data = [
+    {n:"한신휴플러스", v:13.6, c:COLOR.hanshin},
+    {n:"대륙현대1차", v:11.5, c:COLOR.daeryuk},
+    {n:"롯데인벤스가1", v:4.5, c:COLOR.lotte},
+  ];
+  const W=470,H=300,B=54,T=30, bw=86, gap=(W-3*bw)/4, max=16;
+  data.forEach((d,i)=>{
+    const x = gap + i*(bw+gap);
+    const h = (d.v/max)*(H-T-B);
+    S("rect",{x,y:H-B-h,width:bw,height:h,rx:10,fill:d.c,"fill-opacity":.9},svg);
+    S("text",{x:x+bw/2,y:H-B-h-10,fill:"#e8eef8","font-size":17,"font-weight":800,"text-anchor":"middle"},svg).textContent="+"+d.v+"%";
+    S("text",{x:x+bw/2,y:H-B+20,fill:"#93a5c4","font-size":12.5,"text-anchor":"middle"},svg).textContent=d.n;
+  });
+  S("text",{x:W/2,y:H-8,fill:"#5f7396","font-size":11.5,"text-anchor":"middle"},svg).textContent="롯데인벤스가1의 낮은 상승률 = 아직 반영되지 않은 갭";
+})();
+
+/* ═══════ 4) 레이더 차트 ═══════ */
+document.querySelectorAll("svg.radar").forEach(svg=>{
+  const scores = svg.dataset.scores.split(",").map(Number);
+  const AXES = ["학군","상품성","가격매력","모멘텀","환금성"];
+  const cx=140, cy=130, rMax=88, n=5;
+  const pt=(i,r)=>{ const a=-Math.PI/2 + i*2*Math.PI/n; return [cx+r*Math.cos(a), cy+r*Math.sin(a)]; };
+  // rings
+  for(let ring=1; ring<=4; ring++){
+    const r=rMax*ring/4;
+    const d=AXES.map((_,i)=>{const[x,y]=pt(i,r);return(i?"L":"M")+x+","+y}).join(" ")+" Z";
+    S("path",{d,fill:"none",stroke:"#24385c","stroke-width":1},svg);
+  }
+  // axes + labels
+  AXES.forEach((lbl,i)=>{
+    const [x,y]=pt(i,rMax);
+    S("line",{x1:cx,y1:cy,x2:x,y2:y,stroke:"#24385c","stroke-width":1},svg);
+    const [lx,ly]=pt(i,rMax+22);
+    S("text",{x:lx,y:ly+4,fill:"#93a5c4","font-size":12,"text-anchor":"middle","font-weight":600},svg).textContent=lbl;
+  });
+  // polygon
+  const ac = getComputedStyle(svg.closest(".apt-card")).getPropertyValue("--ac").trim();
+  const d=scores.map((s,i)=>{const[x,y]=pt(i,rMax*s/5);return(i?"L":"M")+x+","+y}).join(" ")+" Z";
+  S("path",{d,fill:ac,"fill-opacity":.22,stroke:ac,"stroke-width":2.2,"stroke-linejoin":"round"},svg);
+  scores.forEach((s,i)=>{const[x,y]=pt(i,rMax*s/5);S("circle",{cx:x,cy:y,r:4,fill:ac},svg);});
+});
+</script>
+</body>
+</html>
