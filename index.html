@@ -24,12 +24,15 @@ img,svg{max-width:100%}
 
 /* ── nav ── */
 nav{position:sticky;top:0;z-index:1000;background:rgba(11,21,38,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
-nav .in{max-width:1080px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:16px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-nav .in::-webkit-scrollbar{display:none}
+nav .in{max-width:1080px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:14px 12px;flex-wrap:wrap}
 nav .logo{font-weight:800;font-size:15px;white-space:nowrap}
 nav .logo b{color:var(--gold)}
-nav a.mi{font-size:13px;color:var(--sub);white-space:nowrap;padding:4px 2px}
+nav a.mi{font-size:12.5px;color:var(--sub);white-space:nowrap;padding:3px 2px}
 nav a.mi:hover{color:var(--ink)}
+@media(max-width:700px){
+  nav .in{gap:8px 10px;padding:10px 16px}
+  nav a.mi{font-size:11.5px}
+}
 
 /* ── hero ── */
 .hero{max-width:1080px;margin:0 auto;padding:64px 20px 36px}
